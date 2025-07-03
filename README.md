@@ -1,3 +1,15 @@
+---
+title: AI Hair Studio Gemini
+emoji: 🎨
+colorFrom: pink
+colorTo: purple
+sdk: gradio
+sdk_version: 4.0.0
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # 🎨 AI Hair Stylist
 
 **Professional hair transformation and evaluation system powered by Gemini 2.0 Flash**
