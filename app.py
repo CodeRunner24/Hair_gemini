@@ -196,51 +196,21 @@ class HairChangeAgent:
     def change_hair_style(self, original_image, hair_request, language="en"):
         """Transform user's hair in the photo"""
         
-        # Ultra-protective image editing prompt
+        # Hair-only modification prompt
         prompt = f"""
-        CRITICAL: This is an IMAGE EDITING task, NOT image generation!
+        MODIFY ONLY THE HAIR: {hair_request}
 
-        TASK: Edit ONLY the hair area in this existing photo. DO NOT create a new photo.
+        RULES:
+        - Keep face, eyes, nose, mouth, skin exactly the same
+        - Keep body, clothing, background unchanged  
+        - Only change hair color/style within existing hairline
+        - Maintain natural hair texture and lighting
 
-        EDIT REQUEST: {hair_request}
+        This person wants: {hair_request}
 
-        🚨 ABSOLUTE PRESERVATION RULES - ZERO TOLERANCE:
-        
-        PRESERVE 100% UNCHANGED:
-        ❌ FACE shape, features, bone structure
-        ❌ EYES: color, shape, size, position, eyelashes, eyebrows  
-        ❌ NOSE: shape, size, nostrils
-        ❌ MOUTH: lips shape, size, color
-        ❌ SKIN: tone, texture, blemishes, wrinkles
-        ❌ FACIAL expression and emotion
-        ❌ HEAD position and angle
-        ❌ BODY posture and clothing
-        ❌ BACKGROUND and lighting
-        ❌ PHOTO quality and resolution
+        Make the hair change look natural and realistic.
 
-        ✅ EDIT ONLY: Hair area within the existing hairline
-
-        HAIR EDITING APPROACH:
-        1. IDENTIFY the current hair area boundaries
-        2. WORK ONLY within those boundaries  
-        3. CHANGE hair color/style while preserving:
-           - Original hairline shape
-           - Natural hair growth direction
-           - Existing hair volume and texture
-        
-        FOR "{hair_request}":
-        - Change hair color to complement skin undertone
-        - Maintain natural hair appearance
-        - Keep realistic hair texture and lighting
-        - Preserve hair's interaction with face shadows
-
-        RESULT MUST BE: Same person, same face, same photo, different hair only.
-
-        REMEMBER: You are editing an existing image, not creating a new one!
-
-        RESPONSE LANGUAGE: {"Turkish" if language == "tr" else "English"}
-
-        Request: {hair_request}
+        {"Türkçe yanıtla." if language == "tr" else "Respond in English."}
         """
         
         try:
@@ -249,9 +219,9 @@ class HairChangeAgent:
                 contents=[prompt, original_image],
                 config=types.GenerateContentConfig(
                     response_modalities=['TEXT', 'IMAGE'],
-                    temperature=0.05,
-                    top_p=0.6,
-                    top_k=10,
+                    temperature=0.01,
+                    top_p=0.3,
+                    top_k=5,
                 )
             )
             
@@ -269,9 +239,12 @@ class HairChangeAgent:
         except Exception as e:
             try:
                 simple_prompt = f"""
-                Edit this photo: Change hair to {hair_request}. 
-                IMPORTANT: Keep face, body, background exactly the same. Only edit hair area.
-                Response in {"Turkish" if language == "tr" else "English"}.
+                Hair modification: {hair_request}
+                
+                Keep everything the same except hair. Same face, same person, same background.
+                Only modify hair color/style naturally.
+                
+                {"Türkçe yanıtla." if language == "tr" else "Respond in English."}
                 """
                 
                 response = self.client.models.generate_content(
@@ -279,8 +252,9 @@ class HairChangeAgent:
                     contents=[simple_prompt, original_image],
                     config=types.GenerateContentConfig(
                         response_modalities=['TEXT', 'IMAGE'],
-                        temperature=0.01,
-                        top_p=0.5,
+                        temperature=0.001,
+                        top_p=0.2,
+                        top_k=3,
                     )
                 )
                 
@@ -315,73 +289,31 @@ class HairEvaluationAgent:
         
         if language == "tr":
             prompt = f"""
-            Bu iki fotoğrafı karşılaştır ve saç değişimini değerlendir:
+            Bu iki fotoğrafı karşılaştır: orijinal vs "{hair_change_request}" sonrası.
 
-            📸 FOTOĞRAFLAR:
-            1. ORİJİNAL: Mevcut saç stili
-            2. YENİ: "{hair_change_request}" editi uygulanmış
+            🎯 **PUAN VER (1-10):**
+            • Yüz uyumu: 
+            • Renk uyumu:
+            • Doğallık:
+            • Genel görünüm:
 
-            🔍 DEĞERLENDİRME KRİTERLERİ:
-
-            📐 **Yüz Uyumu** (1-10): Saç kişinin yüz şekline uygun mu?
-            🎨 **Renk Uyumu** (1-10): Saç rengi cilt tonuna yakışıyor mu?  
-            ✨ **Doğallık** (1-10): Gerçekçi ve doğal görünüyor mu?
-            💫 **Genel Görünüm** (1-10): Kişiye yakışıklı mı?
-
-            📊 **SONUÇ FORMATI:**
-
-            🎯 **TOPLAM PUAN: X/40**
-
-            📋 **PUANLAR:**
-            • Yüz Uyumu: X/10
-            • Renk Uyumu: X/10  
-            • Doğallık: X/10
-            • Genel Görünüm: X/10
-
-            ✅ **GÜZEL OLAN:**
-            • [Hangi yönleri başarılı]
-
-            💡 **ÖNERİ:**
-            • [Varsa iyileştirme önerisi]
-
-            🎭 **SONUÇ:**
-            [Bu saç kişiye yakışıyor mu? Kısa ve net değerlendirme]
+            📝 **YORUM:**
+            Bu saç stilini sevdin mi? Neden? Kısa yorumla.
 
             Samimi Türkçe ile yanıtla! 😊
             """
         else:
             prompt = f"""
-            Compare these two photos and evaluate the hair change:
+            Compare original vs new hair: "{hair_change_request}"
 
-            📸 PHOTOS:
-            1. ORIGINAL: Current hair style
-            2. NEW: "{hair_change_request}" edit applied
+            🎯 **RATE (1-10):**
+            • Face compatibility: 
+            • Color harmony:
+            • Naturalness:
+            • Overall look:
 
-            🔍 EVALUATION CRITERIA:
-
-            📐 **Face Compatibility** (1-10): Does the hair suit the person's face shape?
-            🎨 **Color Harmony** (1-10): Does the hair color match the skin tone?  
-            ✨ **Naturalness** (1-10): Does it look realistic and natural?
-            💫 **Overall Appearance** (1-10): Does it look good on the person?
-
-            📊 **RESULT FORMAT:**
-
-            🎯 **TOTAL SCORE: X/40**
-
-            📋 **SCORES:**
-            • Face Compatibility: X/10
-            • Color Harmony: X/10  
-            • Naturalness: X/10
-            • Overall Appearance: X/10
-
-            ✅ **WHAT WORKS WELL:**
-            • [Which aspects are successful]
-
-            💡 **SUGGESTION:**
-            • [Any improvement suggestion if needed]
-
-            🎭 **CONCLUSION:**
-            [Does this hair suit this person? Brief and clear evaluation]
+            📝 **COMMENT:**
+            Do you like this hair style? Why? Brief comment.
 
             Respond in friendly English! 😊
             """
