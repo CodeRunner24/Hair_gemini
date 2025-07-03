@@ -625,8 +625,7 @@ with gr.Blocks(
                 label="Hair stylist chat",
                 height=400,
                 show_label=False,
-                avatar_images=("👤", "🎨"),
-                interactive=False
+                avatar_images=("👤", "🎨")
             )
             
             with gr.Row():
