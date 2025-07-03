@@ -642,7 +642,7 @@ with gr.Blocks(
                 )
                 send_btn = gr.Button(LANGUAGES["en"]["send_button"], variant="primary", scale=1, interactive=False)
             
-            clear_btn = gr.Button(LANGUAGES["en"]["clear_chat"], variant="secondary", interactive=False)
+            clear_btn = gr.Button(LANGUAGES["en"]["clear_chat"], variant="secondary", interactive=True)
     
     # Footer
     footer_section = gr.Markdown(LANGUAGES["en"]["features_title"] + "\n" + LANGUAGES["en"]["features_list"] + "\n\n" + LANGUAGES["en"]["tech_info"])
