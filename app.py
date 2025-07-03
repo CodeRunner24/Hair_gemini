@@ -429,14 +429,19 @@ def process_hair_change(image, message, history):
     global current_original_image, current_new_image
     
     if client is None:
-        return history + [[LANGUAGES[current_language]["enter_api_first"], None]], "", None
+        history.append({"role": "user", "content": message})
+        history.append({"role": "assistant", "content": LANGUAGES[current_language]["enter_api_first"]})
+        return history, "", None
     
     if image is None:
-        return history + [[LANGUAGES[current_language]["upload_photo_first"], None]], "", None
+        history.append({"role": "user", "content": message})
+        history.append({"role": "assistant", "content": LANGUAGES[current_language]["upload_photo_first"]})
+        return history, "", None
     
     current_original_image = Image.fromarray(image)
     
-    history.append([message, LANGUAGES[current_language]["processing_msg"]])
+    history.append({"role": "user", "content": message})
+    history.append({"role": "assistant", "content": LANGUAGES[current_language]["processing_msg"]})
     
     try:
         new_image, change_text = hair_changer.change_hair_style(current_original_image, message, current_language)
@@ -458,16 +463,16 @@ def process_hair_change(image, message, history):
 {evaluation}
             """
             
-            history[-1] = [message, full_response]
+            history[-1] = {"role": "assistant", "content": full_response}
             return history, "", current_new_image
             
         else:
-            history[-1] = [message, change_text]
+            history[-1] = {"role": "assistant", "content": change_text}
             return history, "", None
             
     except Exception as e:
         error_msg = f"❌ Error occurred: {str(e)}\n\nDetail: {traceback.format_exc()}"
-        history[-1] = [message, error_msg]
+        history[-1] = {"role": "assistant", "content": error_msg}
         return history, "", None
 
 def clear_chat():
@@ -480,14 +485,14 @@ def clear_chat():
 def handle_api_key(api_key):
     """Handle API key and set up system"""
     if not api_key or not api_key.strip():
-        return "⚠️ Please enter your API key.", gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)
+        return "⚠️ Please enter your API key.", gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)
     
     success, message = setup_ai_system(api_key.strip())
     
     if success:
-        return message, gr.update(interactive=True), gr.update(interactive=True), gr.update(interactive=True), gr.update(interactive=True)
+        return message, gr.update(interactive=True), gr.update(interactive=True), gr.update(interactive=True)
     else:
-        return message, gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)
+        return message, gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)
 
 def switch_language(lang):
     """Switch interface language"""
@@ -519,7 +524,7 @@ def switch_language(lang):
 def on_image_upload(image):
     """Handle image upload"""
     if image is not None and client is not None:
-        welcome_msg = [[None, LANGUAGES[current_language]["welcome_msg"]]]
+        welcome_msg = [{"role": "assistant", "content": LANGUAGES[current_language]["welcome_msg"]}]
         return welcome_msg
     return []
 
@@ -623,7 +628,8 @@ with gr.Blocks(
             
             chatbot = gr.Chatbot(
                 height=400,
-                show_label=False
+                show_label=False,
+                type='messages'
             )
             
             with gr.Row():
@@ -662,7 +668,7 @@ with gr.Blocks(
     api_submit_btn.click(
         fn=handle_api_key,
         inputs=[api_key_input],
-        outputs=[api_status, image_input, msg_input, send_btn, chatbot]
+        outputs=[api_status, image_input, msg_input, send_btn]
     )
     
     # Message sending
