@@ -622,10 +622,8 @@ with gr.Blocks(
             chat_title = gr.Markdown("### " + LANGUAGES["en"]["chat_title"])
             
             chatbot = gr.Chatbot(
-                label="Hair stylist chat",
                 height=400,
-                show_label=False,
-                avatar_images=("👤", "🎨")
+                show_label=False
             )
             
             with gr.Row():
