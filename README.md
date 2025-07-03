@@ -7,7 +7,7 @@ sdk: gradio
 sdk_version: 5.35.0
 app_file: app.py
 pinned: false
-short_description: AI Hair Stylist with Gemini 2.0 Flash - Transform your hair while preserving your face!
+short_description: AI Hair Stylist powered by Gemini 2.0 Flash
 license: mit
 ---
 
